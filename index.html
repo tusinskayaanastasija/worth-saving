@@ -98,7 +98,7 @@
         
         /* Иконки телеграма внутри кнопок (на случай если фоны не загрузятся) */
         .tg-btn::after {
-            content: '\f2c6'; /* Иконка телеграма из Font Awesome */
+            content: '\f2c6';
             font-family: 'Font Awesome 6 Brands';
             font-weight: 400;
             color: white;
@@ -897,6 +897,233 @@
                 font-size: 1.2rem;
             }
         }
+
+            .animated-title-container {
+                width: 100%;
+                max-width: 900px;
+                margin: 0 auto 30px;
+                overflow: hidden;
+                position: relative;
+                height: 100px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .animated-title-mask {
+                position: relative;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+                mask-image: linear-gradient(
+                    to right,
+                    transparent 0%,
+                    black 20%,
+                    black 80%,
+                    transparent 100%
+                );
+                -webkit-mask-image: linear-gradient(
+                    to right,
+                    transparent 0%,
+                    black 20%,
+                    black 80%,
+                    transparent 100%
+                );
+            }
+            
+            .animated-title-track {
+                display: flex;
+                position: relative;
+                height: 100%;
+                align-items: center;
+                justify-content: center;
+                gap: 40px;
+                padding: 0 100px;
+                transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+                will-change: transform;
+            }
+            
+            .title-word {
+                font-size: 3.5rem;
+                background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+                font-weight: bold;
+                text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+                letter-spacing: 1px;
+                flex-shrink: 0;
+                opacity: 1;
+                transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+                position: relative;
+                min-width: 200px;
+                text-align: center;
+                transform: translateX(0);
+            }
+            
+            /* Состояние 1: СПАСАТЬ НЕЛЬЗЯ (центрировано) */
+            .state-1 .title-word[data-word="спасать"] {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            
+            .state-1 .title-word[data-word="нельзя"] {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            
+            .state-1 .title-word[data-word="бросить"] {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+            
+            /* Состояние 2: НЕЛЬЗЯ БРОСИТЬ (центрировано) */
+            .state-2 .title-word[data-word="спасать"] {
+                transform: translateX(-100px);
+                opacity: 0;
+            }
+            
+            .state-2 .title-word[data-word="нельзя"] {
+                transform: translateX(-200px);
+                opacity: 1;
+            }
+            
+            .state-2 .title-word[data-word="бросить"] {
+                transform: translateX(-200px);
+                opacity: 1;
+            }
+            
+            /* Анимация перехода */
+            @keyframes wordSlideOutLeft {
+                0% {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateX(-100px);
+                    opacity: 0;
+                }
+            }
+            
+            @keyframes wordSlideOutRight {
+                0% {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateX(100px);
+                    opacity: 0;
+                }
+            }
+            
+            @keyframes wordSlideInLeft {
+                0% {
+                    transform: translateX(100px);
+                    opacity: 0;
+                }
+                100% {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes wordSlideInRight {
+                0% {
+                    transform: translateX(-100px);
+                    opacity: 0;
+                }
+                100% {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            /* Эффект тени для плавного исчезновения */
+            .title-word::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: transparent;
+                transition: all 1s ease;
+            }
+            
+            /* Центральное слово всегда немного ярче */
+            .title-word.center {
+                opacity: 1 !important;
+                transform: scale(1.05) !important;
+                filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.4)) !important;
+                z-index: 2;
+            }
+            
+            /* Адаптивность */
+            @media (max-width: 1000px) {
+                .animated-title-container {
+                    height: 80px;
+                }
+                
+                .title-word {
+                    font-size: 2.8rem;
+                    min-width: 160px;
+                }
+                
+                .animated-title-track {
+                    gap: 30px;
+                    padding: 0 80px;
+                }
+            }
+            
+            @media (max-width: 768px) {
+                .animated-title-container {
+                    height: 60px;
+                    margin-bottom: 20px;
+                }
+                
+                .title-word {
+                    font-size: 2rem;
+                    min-width: 120px;
+                }
+                
+                .animated-title-track {
+                    gap: 20px;
+                    padding: 0 60px;
+                }
+                
+                .animated-title-mask {
+                    mask-image: linear-gradient(
+                        to right,
+                        transparent 0%,
+                        black 25%,
+                        black 75%,
+                        transparent 100%
+                    );
+                    -webkit-mask-image: linear-gradient(
+                        to right,
+                        transparent 0%,
+                        black 25%,
+                        black 75%,
+                        transparent 100%
+                    );
+                }
+            }
+            
+            @media (max-width: 480px) {
+                .animated-title-container {
+                    height: 50px;
+                }
+                
+                .title-word {
+                    font-size: 1.8rem;
+                    min-width: 100px;
+                }
+                
+                .animated-title-track {
+                    gap: 15px;
+                    padding: 0 40px;
+                }
+            }
     </style>
 </head>
 <body>
@@ -908,7 +1135,19 @@
     
     <div class="container">
         <div class="header">
-            <h1 class="title">СПАСАТЬ НЕЛЬЗЯ БРОСИТЬ</h1>
+            <div class="animated-title-container">
+                <div class="animated-title-mask">
+                    <div class="animated-title-track" id="animated-title-track">
+                        <!-- Первая фраза: СПАСАТЬ НЕЛЬЗЯ -->
+                        <span class="title-word" data-word="спасать">СПАСАТЬ</span>
+                        <span class="title-word" data-word="нельзя">НЕЛЬЗЯ</span>
+                        
+                        <!-- Вторая фраза: НЕЛЬЗЯ БРОСИТЬ (скрыта) -->
+                        <span class="title-word" data-word="нельзя" style="opacity: 0;">НЕЛЬЗЯ</span>
+                        <span class="title-word" data-word="бросить" style="opacity: 0;">БРОСИТЬ</span>
+                    </div>
+                </div>
+            </div>
             <p class="subtitle">Индекс Тусинской — Аманитовой, или WS-индекс (Worth Saving) — математическая модель оценки состояния произвольного народа. Сатирико-аналитический инструмент для измерения степени деградации общества.</p>
         </div>
         
@@ -1607,20 +1846,120 @@
                 await copyToClipboard(shareText);
             });
         }
+        
+        function enhanceTitleAnimation() {
+            const track = document.getElementById('animated-title-track');
+            const words = document.querySelectorAll('.title-word');
+            
+            if (!track) return;
+            
+            let currentState = 1; // 1: СПАСАТЬ НЕЛЬЗЯ, 2: НЕЛЬЗЯ БРОСИТЬ
+            let isAnimating = false;
+            
+            function switchState() {
+                if (isAnimating) return;
+                
+                isAnimating = true;
+                
+                track.classList.remove(`state-${currentState}`);
+                
+                currentState = currentState === 1 ? 2 : 1;
+                
+                setTimeout(() => {
+                    track.classList.add(`state-${currentState}`);
+                    
+                    setTimeout(() => {
+                        isAnimating = false;
+                    }, 1500);
+                }, 10);
+            }
+            
+            setInterval(() => {
+                if (!isAnimating) {
+                    switchState();
+                }
+            }, 4000);
+            
+            track.classList.add('state-1');
+            
+            function updateWordStates() {
+                const containerRect = track.getBoundingClientRect();
+                const center = containerRect.left + containerRect.width / 2;
+                
+                words.forEach(word => {
+                    const wordRect = word.getBoundingClientRect();
+                    const wordCenter = wordRect.left + wordRect.width / 2;
+                    const distance = Math.abs(wordCenter - center);
+                    const maxDistance = containerRect.width / 3;
+                    
+                    let opacity = 1 - (distance / maxDistance);
+                    opacity = Math.max(0.3, Math.min(1, opacity));
+                    
+                    let scale = 0.95 + (0.1 * opacity);
+                    
+                    if (distance < 50) {
+                        word.classList.add('center');
+                        word.style.opacity = 1;
+                        word.style.transform = `scale(${scale})`;
+                        word.style.filter = 'drop-shadow(0 8px 20px rgba(0, 0, 0, 0.4))';
+                    } else {
+                        word.classList.remove('center');
+                        word.style.opacity = opacity;
+                        word.style.transform = `scale(${scale})`;
+                        word.style.filter = 'drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3))';
+                    }
+                });
+            }
+            
+            function onAnimationFrame() {
+                updateWordStates();
+                requestAnimationFrame(onAnimationFrame);
+            }
+            
+            requestAnimationFrame(onAnimationFrame);
+            
+            const container = document.querySelector('.animated-title-container');
+            let animationInterval;
+            
+            function startAutoSwitch() {
+                animationInterval = setInterval(() => {
+                    if (!isAnimating) {
+                        switchState();
+                    }
+                }, 4000);
+            }
+            
+            function stopAutoSwitch() {
+                if (animationInterval) {
+                    clearInterval(animationInterval);
+                }
+            }
+            
+            startAutoSwitch();
+            
+            if (container) {
+                container.addEventListener('mouseenter', () => {
+                    stopAutoSwitch();
+                });
+                
+                container.addEventListener('mouseleave', () => {
+                    startAutoSwitch();
+                });
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             renderFormula();
-            
             createScale();
             initParameters();
             
             const hasUrlParams = checkUrlForParameters();
-            
             if (!hasUrlParams) {
                 initRandomValues();
             }
             
             setupShareButton();
+            enhanceTitleAnimation();
         });
     </script>
 
