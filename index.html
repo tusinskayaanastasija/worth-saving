@@ -1455,55 +1455,73 @@
             }, 10);
         }
         
+        // Кодирование параметров с переменной точностью
         function encodeParameters() {
             let encodedParts = [];
             
             parameters.forEach((param, index) => {
-                // Масштабируем значение до 0-1023 (10 бит)
-                const scaledValue = Math.round((param.value / param.max) * 1023);
-                // Масштабируем вес до 0-63 (6 бит)
-                const scaledWeight = Math.round(param.weight * 63);
+                // Для значений используем 12 бит (0-4095) для лучшей точности
+                const scaledValue = Math.round((param.value / param.max) * 4095);
                 
-                // Упаковываем в одно число: 16 бит = 10 бит значения + 6 бит веса
-                const packed = (scaledValue << 6) | scaledWeight;
+                // Для весов используем 8 бит (0-255) - точность до 0.004
+                const scaledWeight = Math.round(param.weight * 255);
                 
-                // Кодируем в base62 (длина 2-3 символа)
+                // Упаковываем в 20 бит (12 + 8)
+                const packed = (scaledValue << 8) | scaledWeight;
+                
+                // Кодируем в base62 (3-4 символа)
                 let encoded = encodeBase62(packed);
-                // Дополняем до 3 символов для единообразия
-                while (encoded.length < 3) {
-                    encoded = '0' + encoded;
-                }
-                encodedParts.push(encoded);
+                
+                // Для единообразия добавляем префикс с количеством символов
+                // Это позволяет использовать разную длину для разных значений
+                encodedParts.push(encoded.length.toString(36) + encoded);
             });
             
             return encodedParts.join('');
         }
         
-        // Декодирование параметров из строки base62
+        // Декодирование параметров с переменной длиной
         function decodeParameters(encodedString) {
             try {
-                // Проверяем длину строки (10 параметров * 3 символа = 30 символов)
-                if (encodedString.length !== 30) {
-                    console.error('Некорректная длина строки параметров');
-                    return false;
-                }
+                let pos = 0;
+                let paramIndex = 0;
                 
-                // Разбиваем на части по 3 символа
-                for (let i = 0; i < 10; i++) {
-                    const part = encodedString.substr(i * 3, 3);
+                while (pos < encodedString.length && paramIndex < parameters.length) {
+                    // Читаем длину закодированного параметра (в base36)
+                    const lengthChar = encodedString[pos];
+                    const partLength = parseInt(lengthChar, 36);
+                    
+                    if (isNaN(partLength) || partLength <= 0) {
+                        throw new Error('Некорректная длина параметра');
+                    }
+                    
+                    // Извлекаем закодированную часть
+                    const part = encodedString.substr(pos + 1, partLength);
+                    if (part.length !== partLength) {
+                        throw new Error('Недостаточно данных для параметра');
+                    }
+                    
                     const packed = decodeBase62(part);
                     
                     // Извлекаем значение и вес
-                    const scaledWeight = packed & 0x3F; // Младшие 6 бит (0-63)
-                    const scaledValue = (packed >> 6) & 0x3FF; // Следующие 10 бит (0-1023)
+                    const scaledWeight = packed & 0xFF; // Младшие 8 бит
+                    const scaledValue = (packed >> 8) & 0xFFF; // Следующие 12 бит
                     
-                    // Восстанавливаем значения
-                    parameters[i].weight = scaledWeight / 63;
-                    parameters[i].value = (scaledValue / 1023) * parameters[i].max;
+                    // Восстанавливаем значения с улучшенной точностью
+                    parameters[paramIndex].weight = scaledWeight / 255;
+                    parameters[paramIndex].value = (scaledValue / 4095) * parameters[paramIndex].max;
                     
-                    // Округляем значения для отображения
-                    parameters[i].weight = Math.round(parameters[i].weight * 100) / 100;
-                    parameters[i].value = Math.round(parameters[i].value);
+                    // Округляем для отображения (но храним точные значения для расчетов)
+                    parameters[paramIndex].weight = parseFloat(parameters[paramIndex].weight.toFixed(4));
+                    parameters[paramIndex].value = Math.round(parameters[paramIndex].value);
+                    
+                    pos += 1 + partLength;
+                    paramIndex++;
+                }
+                
+                // Проверяем, что все параметры были декодированы
+                if (paramIndex !== parameters.length) {
+                    throw new Error('Не все параметры были декодированы');
                 }
                 
                 return true;
