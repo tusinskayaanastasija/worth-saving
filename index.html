@@ -285,8 +285,8 @@
             align-items: center;
             justify-content: center;
             border: 2px solid rgba(254, 202, 87, 0.5);
-            animation: formulaGlow 3s ease-in-out infinite alternate;
-            will-change: box-shadow;
+            animation: formulaGlow 4s ease-in-out infinite;
+            will-change: auto;
         }
 
         @keyframes formulaGlow {
@@ -294,17 +294,22 @@
                 box-shadow: 
                     0 15px 40px rgba(0, 0, 0, 0.6),
                     inset 0 1px 0 rgba(255, 255, 255, 0.1),
-                    0 0 60px rgba(254, 202, 87, 0.3),
-                    0 0 100px rgba(254, 202, 87, 0.15);
-                border-color: rgba(254, 202, 87, 0.4);
+                    0 0 80px rgba(254, 202, 87, 0.4);
+                border-color: rgba(254, 202, 87, 0.5);
+            }
+            50% {
+                box-shadow: 
+                    0 15px 40px rgba(0, 0, 0, 0.6),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                    0 0 100px rgba(254, 202, 87, 0.5);
+                border-color: rgba(254, 202, 87, 0.7);
             }
             100% {
                 box-shadow: 
                     0 15px 40px rgba(0, 0, 0, 0.6),
                     inset 0 1px 0 rgba(255, 255, 255, 0.1),
-                    0 0 100px rgba(254, 202, 87, 0.5),
-                    0 0 150px rgba(254, 202, 87, 0.25);
-                border-color: rgba(254, 202, 87, 0.7);
+                    0 0 80px rgba(254, 202, 87, 0.4);
+                border-color: rgba(254, 202, 87, 0.5);
             }
         }
         
@@ -1705,6 +1710,106 @@
                 font-size: 1.2rem;
             }
         }
+
+        @media (max-width: 768px) {
+            .formula .katex-display {
+                display: block !important;
+                overflow: auto hidden !important;
+                -webkit-overflow-scrolling: touch !important;
+                padding: 10px 5px !important;
+            }
+            
+            .formula .katex {
+                font-size: 1.2rem !important;
+                transform: scale(0.85) !important;
+                transform-origin: left center !important;
+                max-width: 100% !important;
+                display: inline-block !important;
+                white-space: nowrap !important;
+            }
+            
+            .formula-container {
+                overflow: hidden !important;
+                width: 100% !important;
+                position: relative !important;
+            }
+            
+            .formula {
+                min-height: 120px !important;
+                padding: 20px 15px !important;
+                overflow: hidden !important;
+            }
+            
+            .formula-description {
+                font-size: 0.9rem !important;
+                margin-top: 10px !important;
+                padding: 0 5px !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .formula .katex {
+                font-size: 1rem !important;
+                transform: scale(0.75) !important;
+                transform-origin: left center !important;
+            }
+            
+            .formula {
+                min-height: 110px !important;
+                padding: 15px 10px !important;
+            }
+            
+            .formula .katex-display {
+                padding: 8px 3px !important;
+                margin: 0 auto !important;
+                text-align: center !important;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .formula .katex {
+                font-size: 0.9rem !important;
+                transform: scale(0.7) !important;
+                transform-origin: center center !important;
+            }
+            
+            .formula {
+                min-height: 100px !important;
+                padding: 12px 8px !important;
+            }
+            
+            .formula {
+                animation: formulaGlow 6s ease-in-out infinite !important;
+            }
+            
+            .formula-highlight {
+                display: none !important;
+            }
+        }
+        
+        @media (max-height: 600px) and (orientation: landscape) {
+            .formula .katex {
+                font-size: 1rem !important;
+                transform: scale(0.8) !important;
+            }
+            
+            .formula {
+                min-height: 90px !important;
+                padding: 15px 10px !important;
+                margin: 10px 0 40px 0 !important;
+            }
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            .formula {
+                animation: none !important;
+                box-shadow: 
+                    0 15px 40px rgba(0, 0, 0, 0.6),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                    0 0 90px rgba(254, 202, 87, 0.45) !important;
+                border-color: rgba(254, 202, 87, 0.6) !important;
+            }
+        }
     </style>
 </head>
 <body class="mobile-optimized">
@@ -1943,11 +2048,17 @@
         function renderFormula() {
             const formulaElement = getElement('formula');
             const formulaContainer = formulaElement.querySelector('.formula-container');
+
+            formulaContainer.innerHTML = '';
             
             const formula = String.raw`
-                \text{WS}(P, t) = 1000 \cdot \frac{1}{1 + e^{10(\|\mathbf{x}\|_{W} - 0.5)}}, \quad 
+                \text{WS}(P, t) = 1000 \cdot \frac{1}{1 + e^{10(\|\mathbf{x}\|_{W} - 0.5)}}, \\
                 \|\mathbf{x}\|_{W} = \sqrt{\sum_{i=1}^{n} w_i \cdot x_i^2}
             `;
+
+            const formulaWrapper = document.createElement('div');
+            formulaWrapper.className = 'katex-formula-wrapper';
+            formulaWrapper.style.cssText = 'width: 100%; overflow: hidden;';
             
             katex.render(formula, formulaContainer, {
                 displayMode: true,
@@ -1955,13 +2066,41 @@
                 fleqn: false,
                 output: 'html',
                 trust: true
+                maxSize: window.innerWidth <= 768 ? 14 : Infinity,
+                maxExpand: window.innerWidth <= 768 ? 100 : 1000
             });
+
+            formulaContainer.appendChild(formulaWrapper);
             
             const description = document.createElement('div');
             description.className = 'formula-description';
             description.innerHTML = 'где <span style="color:#feca57; text-shadow: 0 0 10px rgba(254, 202, 87, 0.4);">w<sub>i</sub></span> — вес параметра, <span style="color:#48dbfb; text-shadow: 0 0 10px rgba(72, 219, 251, 0.4);">x<sub>i</sub></span> — нормализованное значение параметра';
             formulaElement.appendChild(description);
+            adaptFormulaToScreen();
         }
+
+        function adaptFormulaToScreen() {
+            const formulaWrapper = document.querySelector('.katex-formula-wrapper');
+            if (!formulaWrapper) return;
+            
+            const container = document.querySelector('.formula-container');
+            const formula = formulaWrapper.querySelector('.katex');
+            
+            if (!formula || !container) return;
+            
+            const containerWidth = container.offsetWidth;
+            const formulaWidth = formula.scrollWidth;
+            
+            if (formulaWidth > containerWidth && window.innerWidth <= 768) {
+                const scale = Math.min(0.95, containerWidth / formulaWidth * 0.9);
+                formula.style.transform = `scale(${scale})`;
+                formula.style.transformOrigin = 'left center';
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            adaptFormulaToScreen();
+        });
 
         function createScale() {
             const ticksContainer = getElement('scale-ticks');
@@ -2512,6 +2651,8 @@
                 const calculator = document.querySelector('.calculator');
                 calculator.style.opacity = '1';
             });
+
+            setTimeout(adaptFormulaToScreen, 100);
         });
     </script>
 
